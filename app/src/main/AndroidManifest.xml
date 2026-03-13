@@ -26,6 +26,10 @@
         android:theme="@style/Theme.MateDroid"
         android:usesCleartextTraffic="true">
 
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="${amapApiKey}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Maps / Geocoding**: Replaced OpenStreetMap map views with AMap across dashboard, drive details, charge details, and regions visited. Reverse geocoding now prefers AMap and formats Chinese addresses as region plus street when available.
+
 ## [1.2.3] - 2026-03-08
 
 ### Added

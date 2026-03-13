@@ -1,6 +1,9 @@
 package com.matedroid.data.repository
 
 import android.util.Log
+import com.matedroid.BuildConfig
+import com.matedroid.data.api.AmapAddressComponent
+import com.matedroid.data.api.AmapWebServiceApi
 import com.matedroid.data.api.NominatimApi
 import com.matedroid.data.api.NominatimAddress
 import com.matedroid.data.local.dao.GeocodeCacheDao
@@ -46,6 +49,7 @@ data class CountryBoundary(
 
 @Singleton
 class GeocodingRepository @Inject constructor(
+    private val amapWebServiceApi: AmapWebServiceApi,
     private val nominatimApi: NominatimApi,
     private val geocodeCacheDao: GeocodeCacheDao,
     private val geocodeQueueDao: GeocodeQueueDao,
@@ -257,19 +261,51 @@ class GeocodingRepository @Inject constructor(
         addressCache[cacheKey]?.let { return it }
 
         return try {
-            val response = nominatimApi.reverseGeocode(latitude, longitude)
-            if (response.isSuccessful) {
-                val result = response.body()
-                val address = formatAddress(result?.address)
-                    ?: result?.displayName?.split(",")?.take(3)?.joinToString(", ")
+            reverseGeocodeWithAmap(latitude, longitude)
+                ?: reverseGeocodeWithNominatim(latitude, longitude)
+        } catch (e: Exception) {
+            null
+        }?.also { addressCache[cacheKey] = it }
+    }
 
-                address?.also { addressCache[cacheKey] = it }
-            } else {
-                null
+    private suspend fun reverseGeocodeWithAmap(latitude: Double, longitude: Double): String? {
+        val webKey = BuildConfig.AMAP_WEB_SERVICE_KEY
+        if (webKey.isBlank()) {
+            return null
+        }
+
+        return try {
+            val response = amapWebServiceApi.reverseGeocode(
+                location = "$longitude,$latitude",
+                key = webKey
+            )
+
+            if (!response.isSuccessful) {
+                return null
             }
+
+            val result = response.body()
+            if (result?.status != "1") {
+                Log.w("GeocodingRepository", "AMap reverse geocode failed: ${result?.info}")
+                return null
+            }
+
+            formatAmapAddress(result.regeocode?.addressComponent)
+                ?: result.regeocode?.formattedAddress
         } catch (e: Exception) {
             null
         }
+    }
+
+    private suspend fun reverseGeocodeWithNominatim(latitude: Double, longitude: Double): String? {
+        val response = nominatimApi.reverseGeocode(latitude, longitude)
+        if (!response.isSuccessful) {
+            return null
+        }
+
+        val result = response.body()
+        return formatAddress(result?.address)
+            ?: result?.displayName?.split(",")?.take(3)?.joinToString(", ")
     }
 
     /**
@@ -323,6 +359,30 @@ class GeocodingRepository @Inject constructor(
         if (city != null) parts.add(city)
 
         return if (parts.isNotEmpty()) parts.joinToString(", ") else null
+    }
+
+    private fun formatAmapAddress(address: AmapAddressComponent?): String? {
+        if (address == null) return null
+
+        val region = listOfNotNull(
+            address.district?.takeIf { it.isNotBlank() },
+            address.city?.takeIf { it.isNotBlank() && it != address.province },
+            address.province?.takeIf { it.isNotBlank() }
+        ).firstOrNull()
+
+        val street = buildList {
+            address.streetNumber?.street?.takeIf { it.isNotBlank() }?.let(::add)
+            address.streetNumber?.number?.takeIf { it.isNotBlank() }?.let(::add)
+        }.joinToString("")
+            .ifBlank {
+                address.township?.takeIf { it.isNotBlank() } ?: ""
+            }
+            .ifBlank { "" }
+
+        return listOf(region, street.takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .joinToString(" ")
+            .ifBlank { null }
     }
 
     // === Country Boundary Methods ===

@@ -45,7 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -65,20 +64,19 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlin.math.roundToInt
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.MarkerOptions
 import com.matedroid.R
 import com.matedroid.data.api.models.ChargeDetail
 import com.matedroid.data.api.models.ChargePoint
 import com.matedroid.data.api.models.Units
 import com.matedroid.domain.model.UnitFormatter
+import com.matedroid.ui.components.AmapMapView
 import com.matedroid.ui.components.FullscreenLineChart
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
+import com.matedroid.ui.components.createDotMarkerIcon
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -591,34 +589,24 @@ private fun ChargeMapCard(latitude: Double, longitude: Double) {
             ) {
                 val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
 
-                DisposableEffect(Unit) {
-                    Configuration.getInstance().userAgentValue = "MateDroid/1.0"
-                    onDispose { }
-                }
-
-                AndroidView(
-                    factory = { ctx ->
-                        MapView(ctx).apply {
-                            setTileSource(TileSourceFactory.MAPNIK)
-                            setMultiTouchControls(true)
-
-                            val geoPoint = GeoPoint(latitude, longitude)
-
-                            // Add marker at charge location
-                            val marker = Marker(this).apply {
-                                position = geoPoint
-                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                title = chargeLocationMarker
-                            }
-                            overlays.add(marker)
-
-                            // Center on the location
-                            controller.setZoom(16.0)
-                            controller.setCenter(geoPoint)
-                        }
-                    },
+                AmapMapView(
                     modifier = Modifier.fillMaxSize()
-                )
+                ) { mapView, map ->
+                    val point = LatLng(latitude, longitude)
+                    map.clear()
+                    map.uiSettings.apply {
+                        setAllGesturesEnabled(true)
+                        isZoomControlsEnabled = false
+                    }
+                    map.addMarker(
+                        MarkerOptions()
+                            .position(point)
+                            .title(chargeLocationMarker)
+                            .anchor(0.5f, 1f)
+                            .icon(createDotMarkerIcon(mapView.context, primaryColor, sizeDp = 18))
+                    )
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 16f))
+                }
             }
         }
     }

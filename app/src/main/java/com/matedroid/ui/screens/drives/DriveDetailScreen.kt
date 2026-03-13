@@ -47,7 +47,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -68,23 +67,21 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlin.math.roundToInt
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.LatLngBounds
+import com.amap.api.maps.model.PolylineOptions
 import com.matedroid.R
 import com.matedroid.data.api.models.DriveDetail
 import com.matedroid.data.api.models.DrivePosition
 import com.matedroid.data.api.models.Units
 import com.matedroid.data.repository.WeatherPoint
 import com.matedroid.domain.model.UnitFormatter
+import com.matedroid.ui.components.AmapMapView
 import com.matedroid.ui.components.FullscreenLineChart
 import com.matedroid.ui.theme.CarColorPalettes
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.BoundingBox
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Polyline
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -472,14 +469,8 @@ private fun DriveMapCard(positions: List<DrivePosition>, routeColor: Color) {
     val endPoint = validPositions.lastOrNull()
 
     fun openInMaps() {
-        if (startPoint != null && endPoint != null) {
-            // Open Google Maps with directions from start to end
-            val uri = Uri.parse(
-                "https://www.google.com/maps/dir/?api=1" +
-                        "&origin=${startPoint.latitude},${startPoint.longitude}" +
-                        "&destination=${endPoint.latitude},${endPoint.longitude}" +
-                        "&travelmode=driving"
-            )
+        if (endPoint != null) {
+            val uri = Uri.parse("geo:${endPoint.latitude},${endPoint.longitude}?q=${endPoint.latitude},${endPoint.longitude}")
             val intent = Intent(Intent.ACTION_VIEW, uri)
             context.startActivity(intent)
         }
@@ -509,61 +500,50 @@ private fun DriveMapCard(positions: List<DrivePosition>, routeColor: Color) {
                     .height(250.dp)
                     .clip(RoundedCornerShape(8.dp))
             ) {
-                DisposableEffect(Unit) {
-                    Configuration.getInstance().userAgentValue = "MateDroid/1.0"
-                    onDispose { }
-                }
+                AmapMapView(
+                    modifier = Modifier.fillMaxSize()
+                ) { mapView, map ->
+                    val points = validPositions.mapNotNull { pos ->
+                        val latitude = pos.latitude ?: return@mapNotNull null
+                        val longitude = pos.longitude ?: return@mapNotNull null
+                        LatLng(latitude, longitude)
+                    }
 
-                AndroidView(
-                    factory = { ctx ->
-                        MapView(ctx).apply {
-                            setTileSource(TileSourceFactory.MAPNIK)
-                            setMultiTouchControls(true)
+                    map.clear()
+                    map.uiSettings.apply {
+                        setAllGesturesEnabled(true)
+                        isZoomControlsEnabled = false
+                    }
 
-                            // Create polyline for the route
-                            val geoPoints = validPositions.map { pos ->
-                                GeoPoint(pos.latitude!!, pos.longitude!!)
-                            }
+                    if (points.isNotEmpty()) {
+                        map.addPolyline(
+                            PolylineOptions()
+                                .addAll(points)
+                                .color(routeColorArgb)
+                                .width(18f)
+                        )
 
-                            val polyline = Polyline().apply {
-                                setPoints(geoPoints)
-                                outlinePaint.color = routeColorArgb
-                                outlinePaint.strokeWidth = 8f
-                                outlinePaint.strokeCap = Paint.Cap.ROUND
-                                outlinePaint.strokeJoin = Paint.Join.ROUND
-                            }
-                            overlays.add(polyline)
-
-                            // Calculate bounding box with padding
-                            if (geoPoints.isNotEmpty()) {
-                                val north = geoPoints.maxOf { it.latitude }
-                                val south = geoPoints.minOf { it.latitude }
-                                val east = geoPoints.maxOf { it.longitude }
-                                val west = geoPoints.minOf { it.longitude }
-
-                                // Add some padding
-                                val latPadding = (north - south) * 0.15
-                                val lonPadding = (east - west) * 0.15
-
-                                val boundingBox = BoundingBox(
-                                    north + latPadding,
-                                    east + lonPadding,
-                                    south - latPadding,
-                                    west - lonPadding
+                        if (points.size == 1) {
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(points.first(), 15f))
+                        } else {
+                            val bounds = buildLatLngBounds(points)
+                            mapView.post {
+                                map.moveCamera(
+                                    CameraUpdateFactory.newLatLngBoundsRect(bounds, 60, 60, 60, 60)
                                 )
-
-                                post {
-                                    zoomToBoundingBox(boundingBox, false)
-                                    invalidate()
-                                }
                             }
                         }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
+                    }
+                }
             }
         }
     }
+}
+
+private fun buildLatLngBounds(points: List<LatLng>): LatLngBounds {
+    val builder = LatLngBounds.builder()
+    points.forEach(builder::include)
+    return builder.build()
 }
 
 data class StatItem(val label: String, val value: String)

@@ -15,7 +15,7 @@ moshi = "1.15.1"
 datastore = "1.1.1"
 securityCrypto = "1.1.0-alpha06"
 vico = "2.0.0-beta.2"
-osmdroid = "6.1.18"
+amap = "10.1.200_loc6.4.9_sea9.7.4"
 junit = "4.13.2"
 junitExt = "1.2.1"
 espresso = "3.6.1"
@@ -81,7 +81,7 @@ glance-material3 = { group = "androidx.glance", name = "glance-material3", versi
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
 # Maps
-osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+amap = { group = "com.amap.api", name = "3dmap-location-search", version.ref = "amap" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

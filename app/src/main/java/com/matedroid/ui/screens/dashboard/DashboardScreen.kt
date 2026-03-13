@@ -83,7 +83,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -111,16 +110,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.model.BitmapDescriptorFactory
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.MarkerOptions
 import com.matedroid.R
 import com.matedroid.data.local.CarImageOverride
+import com.matedroid.ui.components.AmapMapView
 import com.matedroid.ui.components.CarImagePickerDialog
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
 import com.matedroid.data.api.models.BatteryDetails
 import com.matedroid.data.api.models.CarData
 import com.matedroid.data.api.models.CarExterior
@@ -1650,42 +1648,27 @@ private fun SmallLocationMap(
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-
-    DisposableEffect(Unit) {
-        Configuration.getInstance().userAgentValue = "MateDroid/1.0"
-        onDispose { }
-    }
-
     Box(
         modifier = modifier.clickable { onClick() }
     ) {
-        AndroidView(
-            factory = { ctx ->
-                MapView(ctx).apply {
-                    setTileSource(TileSourceFactory.MAPNIK)
-                    setMultiTouchControls(false)
-
-                    // Disable all interactions for this small preview map
-                    setBuiltInZoomControls(false)
-                    isClickable = false
-                    isFocusable = false
-
-                    val carLocation = GeoPoint(latitude, longitude)
-                    controller.setZoom(15.0)
-                    controller.setCenter(carLocation)
-
-                    // Add a marker for the car
-                    val marker = Marker(this).apply {
-                        position = carLocation
-                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        icon = ctx.getDrawable(android.R.drawable.ic_menu_mylocation)
-                    }
-                    overlays.add(marker)
-                }
-            },
+        AmapMapView(
             modifier = Modifier.fillMaxSize()
-        )
+        ) { _, map ->
+            val carLocation = LatLng(latitude, longitude)
+            map.clear()
+            map.uiSettings.apply {
+                setAllGesturesEnabled(false)
+                isZoomControlsEnabled = false
+                isScaleControlsEnabled = false
+            }
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(carLocation, 15f))
+            map.addMarker(
+                MarkerOptions()
+                    .position(carLocation)
+                    .anchor(0.5f, 1f)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            )
+        }
     }
 }
 @Composable
