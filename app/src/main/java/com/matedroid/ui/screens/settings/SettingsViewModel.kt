@@ -13,6 +13,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import com.amap.api.maps.MapsInitializer
 import com.matedroid.R
 import com.matedroid.data.local.SettingsDataStore
 import com.matedroid.data.local.TirePosition
@@ -37,6 +38,8 @@ data class SettingsUiState(
     val serverUrl: String = "",
     val secondaryServerUrl: String = "",
     val apiToken: String = "",
+    val amapAndroidSdkKey: String = "",
+    val amapWebServiceKey: String = "",
     val acceptInvalidCerts: Boolean = false,
     val currencyCode: String = "EUR",
     val showShortDrivesCharges: Boolean = false,
@@ -98,6 +101,8 @@ class SettingsViewModel @Inject constructor(
                 serverUrl = settings.serverUrl,
                 secondaryServerUrl = settings.secondaryServerUrl,
                 apiToken = settings.apiToken,
+                amapAndroidSdkKey = settings.amapAndroidSdkKey,
+                amapWebServiceKey = settings.amapWebServiceKey,
                 acceptInvalidCerts = settings.acceptInvalidCerts,
                 currencyCode = settings.currencyCode,
                 showShortDrivesCharges = settings.showShortDrivesCharges,
@@ -126,6 +131,20 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             apiToken = token,
             testResult = null,
+            error = null
+        )
+    }
+
+    fun updateAmapAndroidSdkKey(key: String) {
+        _uiState.value = _uiState.value.copy(
+            amapAndroidSdkKey = key,
+            error = null
+        )
+    }
+
+    fun updateAmapWebServiceKey(key: String) {
+        _uiState.value = _uiState.value.copy(
+            amapWebServiceKey = key,
             error = null
         )
     }
@@ -262,9 +281,13 @@ class SettingsViewModel @Inject constructor(
                     serverUrl = url,
                     secondaryServerUrl = secondaryUrl,
                     apiToken = _uiState.value.apiToken,
+                    amapAndroidSdkKey = _uiState.value.amapAndroidSdkKey.trim(),
+                    amapWebServiceKey = _uiState.value.amapWebServiceKey.trim(),
                     acceptInvalidCerts = _uiState.value.acceptInvalidCerts,
                     currencyCode = _uiState.value.currencyCode
                 )
+
+                MapsInitializer.setApiKey(_uiState.value.amapAndroidSdkKey.trim())
 
                 // Trigger sync after settings are saved (handles first-time setup)
                 triggerImmediateSync()

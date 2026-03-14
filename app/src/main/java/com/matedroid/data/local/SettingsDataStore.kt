@@ -48,6 +48,8 @@ data class AppSettings(
     val serverUrl: String = "",
     val secondaryServerUrl: String = "",
     val apiToken: String = "",
+    val amapAndroidSdkKey: String = "",
+    val amapWebServiceKey: String = "",
     val acceptInvalidCerts: Boolean = false,
     val currencyCode: String = "EUR",
     val showShortDrivesCharges: Boolean = false,
@@ -68,6 +70,8 @@ class SettingsDataStore @Inject constructor(
     private val serverUrlKey = stringPreferencesKey("server_url")
     private val secondaryServerUrlKey = stringPreferencesKey("secondary_server_url")
     private val apiTokenKey = stringPreferencesKey("api_token")
+    private val amapAndroidSdkKeyKey = stringPreferencesKey("amap_android_sdk_key")
+    private val amapWebServiceKeyKey = stringPreferencesKey("amap_web_service_key")
     private val acceptInvalidCertsKey = booleanPreferencesKey("accept_invalid_certs")
     private val currencyCodeKey = stringPreferencesKey("currency_code")
     private val showShortDrivesChargesKey = booleanPreferencesKey("show_short_drives_charges")
@@ -85,6 +89,8 @@ class SettingsDataStore @Inject constructor(
             serverUrl = preferences[serverUrlKey] ?: "",
             secondaryServerUrl = preferences[secondaryServerUrlKey] ?: "",
             apiToken = preferences[apiTokenKey] ?: "",
+            amapAndroidSdkKey = preferences[amapAndroidSdkKeyKey] ?: "",
+            amapWebServiceKey = preferences[amapWebServiceKeyKey] ?: "",
             acceptInvalidCerts = preferences[acceptInvalidCertsKey] ?: false,
             currencyCode = preferences[currencyCodeKey] ?: "EUR",
             showShortDrivesCharges = preferences[showShortDrivesChargesKey] ?: false,
@@ -141,6 +147,8 @@ class SettingsDataStore @Inject constructor(
         serverUrl: String,
         secondaryServerUrl: String,
         apiToken: String,
+        amapAndroidSdkKey: String,
+        amapWebServiceKey: String,
         acceptInvalidCerts: Boolean,
         currencyCode: String
     ) {
@@ -148,6 +156,8 @@ class SettingsDataStore @Inject constructor(
             preferences[serverUrlKey] = serverUrl
             preferences[secondaryServerUrlKey] = secondaryServerUrl
             preferences[apiTokenKey] = apiToken
+            preferences[amapAndroidSdkKeyKey] = amapAndroidSdkKey
+            preferences[amapWebServiceKeyKey] = amapWebServiceKey
             preferences[acceptInvalidCertsKey] = acceptInvalidCerts
             preferences[currencyCodeKey] = currencyCode
         }

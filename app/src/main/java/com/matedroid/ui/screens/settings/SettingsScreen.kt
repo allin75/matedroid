@@ -122,6 +122,8 @@ fun SettingsScreen(
                 onServerUrlChange = viewModel::updateServerUrl,
                 onSecondaryServerUrlChange = viewModel::updateSecondaryServerUrl,
                 onApiTokenChange = viewModel::updateApiToken,
+                onAmapAndroidSdkKeyChange = viewModel::updateAmapAndroidSdkKey,
+                onAmapWebServiceKeyChange = viewModel::updateAmapWebServiceKey,
                 onAcceptInvalidCertsChange = viewModel::updateAcceptInvalidCerts,
                 onCurrencyChange = viewModel::updateCurrency,
                 onShowShortDrivesChargesChange = viewModel::updateShowShortDrivesCharges,
@@ -204,6 +206,8 @@ private fun SettingsContent(
     onServerUrlChange: (String) -> Unit,
     onSecondaryServerUrlChange: (String) -> Unit,
     onApiTokenChange: (String) -> Unit,
+    onAmapAndroidSdkKeyChange: (String) -> Unit,
+    onAmapWebServiceKeyChange: (String) -> Unit,
     onAcceptInvalidCertsChange: (Boolean) -> Unit,
     onCurrencyChange: (String) -> Unit,
     onShowShortDrivesChargesChange: (Boolean) -> Unit,
@@ -216,7 +220,9 @@ private fun SettingsContent(
     onRunTpmsCheckNow: () -> Unit = {},
     onSimulateSentryEvent: () -> Unit = {}
 ) {
-    var passwordVisible by remember { mutableStateOf(false) }
+    var apiTokenVisible by remember { mutableStateOf(false) }
+    var amapAndroidKeyVisible by remember { mutableStateOf(false) }
+    var amapWebKeyVisible by remember { mutableStateOf(false) }
     var currencyDropdownExpanded by remember { mutableStateOf(false) }
     var showShortDrivesChargesInfoDialog by remember { mutableStateOf(false) }
     var showResyncConfirmDialog by remember { mutableStateOf(false) }
@@ -301,22 +307,22 @@ private fun SettingsContent(
                     .fillMaxWidth()
                     .testTag("tokenInput"),
                 singleLine = true,
-                visualTransformation = if (passwordVisible) {
+                visualTransformation = if (apiTokenVisible) {
                     VisualTransformation.None
                 } else {
                     PasswordVisualTransformation()
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    IconButton(onClick = { apiTokenVisible = !apiTokenVisible }) {
                         Icon(
-                            imageVector = if (passwordVisible) {
+                            imageVector = if (apiTokenVisible) {
                                 Icons.Filled.VisibilityOff
                             } else {
                                 Icons.Filled.Visibility
                             },
                             contentDescription = stringResource(
-                                if (passwordVisible) R.string.hide_token else R.string.show_token
+                                if (apiTokenVisible) R.string.hide_token else R.string.show_token
                             )
                         )
                     }
@@ -326,6 +332,84 @@ private fun SettingsContent(
 
             Text(
                 text = stringResource(R.string.settings_api_token_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.amapAndroidSdkKey,
+                onValueChange = onAmapAndroidSdkKeyChange,
+                label = { Text(stringResource(R.string.settings_amap_android_key_label)) },
+                placeholder = { Text(stringResource(R.string.settings_amap_android_key_placeholder)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                visualTransformation = if (amapAndroidKeyVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(onClick = { amapAndroidKeyVisible = !amapAndroidKeyVisible }) {
+                        Icon(
+                            imageVector = if (amapAndroidKeyVisible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
+                            contentDescription = stringResource(
+                                if (amapAndroidKeyVisible) R.string.hide_key else R.string.show_key
+                            )
+                        )
+                    }
+                },
+                enabled = !uiState.isTesting && !uiState.isSaving
+            )
+
+            Text(
+                text = stringResource(R.string.settings_amap_android_key_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.amapWebServiceKey,
+                onValueChange = onAmapWebServiceKeyChange,
+                label = { Text(stringResource(R.string.settings_amap_web_key_label)) },
+                placeholder = { Text(stringResource(R.string.settings_amap_web_key_placeholder)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                visualTransformation = if (amapWebKeyVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(onClick = { amapWebKeyVisible = !amapWebKeyVisible }) {
+                        Icon(
+                            imageVector = if (amapWebKeyVisible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
+                            contentDescription = stringResource(
+                                if (amapWebKeyVisible) R.string.hide_key else R.string.show_key
+                            )
+                        )
+                    }
+                },
+                enabled = !uiState.isTesting && !uiState.isSaving
+            )
+
+            Text(
+                text = stringResource(R.string.settings_amap_web_key_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)
@@ -812,6 +896,8 @@ private fun SettingsScreenPreview() {
             onServerUrlChange = {},
             onSecondaryServerUrlChange = {},
             onApiTokenChange = {},
+            onAmapAndroidSdkKeyChange = {},
+            onAmapWebServiceKeyChange = {},
             onAcceptInvalidCertsChange = {},
             onCurrencyChange = {},
             onShowShortDrivesChargesChange = {},
@@ -836,6 +922,8 @@ private fun SettingsScreenWithResultPreview() {
             onServerUrlChange = {},
             onSecondaryServerUrlChange = {},
             onApiTokenChange = {},
+            onAmapAndroidSdkKeyChange = {},
+            onAmapWebServiceKeyChange = {},
             onAcceptInvalidCertsChange = {},
             onCurrencyChange = {},
             onShowShortDrivesChargesChange = {},
@@ -862,6 +950,8 @@ private fun SettingsScreenWithBothResultsPreview() {
             onServerUrlChange = {},
             onSecondaryServerUrlChange = {},
             onApiTokenChange = {},
+            onAmapAndroidSdkKeyChange = {},
+            onAmapWebServiceKeyChange = {},
             onAcceptInvalidCertsChange = {},
             onCurrencyChange = {},
             onShowShortDrivesChargesChange = {},
@@ -884,6 +974,8 @@ private fun SettingsScreenWithWarningPreview() {
             onServerUrlChange = {},
             onSecondaryServerUrlChange = {},
             onApiTokenChange = {},
+            onAmapAndroidSdkKeyChange = {},
+            onAmapWebServiceKeyChange = {},
             onAcceptInvalidCertsChange = {},
             onCurrencyChange = {},
             onShowShortDrivesChargesChange = {},

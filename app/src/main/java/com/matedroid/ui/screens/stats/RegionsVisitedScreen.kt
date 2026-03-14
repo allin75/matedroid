@@ -81,6 +81,7 @@ import com.matedroid.ui.icons.CustomIcons
 import com.matedroid.ui.theme.CarColorPalette
 import com.matedroid.ui.theme.CarColorPalettes
 import com.matedroid.ui.theme.BoundaryColor
+import com.matedroid.ui.util.toAmapLatLng
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -573,7 +574,7 @@ private fun CountryMapCard(
                                 val markerColor = if (charge.isDcCharge) palette.dcColor else palette.acColor
                                 map.addMarker(
                                     MarkerOptions()
-                                        .position(LatLng(charge.latitude, charge.longitude))
+                                        .position(toAmapLatLng(charge.latitude, charge.longitude))
                                         .anchor(0.5f, 0.5f)
                                         .title(charge.address)
                                         .snippet("%.1f kWh".format(charge.energyAddedKwh))
@@ -602,7 +603,7 @@ private fun CountryMapCard(
                             driveLocations.forEach { drive ->
                                 map.addMarker(
                                     MarkerOptions()
-                                        .position(LatLng(drive.latitude, drive.longitude))
+                                        .position(toAmapLatLng(drive.latitude, drive.longitude))
                                         .anchor(0.5f, 0.5f)
                                         .title(drive.address)
                                         .snippet(UnitFormatter.formatDistance(drive.distanceKm, units))
@@ -834,21 +835,23 @@ private fun MapModeToggle(
 private fun calculateChargeBounds(chargeLocations: List<ChargeLocation>): LatLngBounds {
     if (chargeLocations.isEmpty()) {
         return LatLngBounds(
-            LatLng(35.0, -10.0),
-            LatLng(55.0, 15.0)
+            toAmapLatLng(35.0, -10.0),
+            toAmapLatLng(55.0, 15.0)
         )
     }
 
-    var minLat = Double.MAX_VALUE
-    var maxLat = Double.MIN_VALUE
-    var minLon = Double.MAX_VALUE
-    var maxLon = Double.MIN_VALUE
+    val convertedPoints = chargeLocations.map { toAmapLatLng(it.latitude, it.longitude) }
 
-    chargeLocations.forEach { location ->
-        minLat = minOf(minLat, location.latitude)
-        maxLat = maxOf(maxLat, location.latitude)
-        minLon = minOf(minLon, location.longitude)
-        maxLon = maxOf(maxLon, location.longitude)
+    var minLat = Double.MAX_VALUE
+    var maxLat = -Double.MAX_VALUE
+    var minLon = Double.MAX_VALUE
+    var maxLon = -Double.MAX_VALUE
+
+    convertedPoints.forEach { point ->
+        minLat = minOf(minLat, point.latitude)
+        maxLat = maxOf(maxLat, point.latitude)
+        minLon = minOf(minLon, point.longitude)
+        maxLon = maxOf(maxLon, point.longitude)
     }
 
     // Add some padding (about 10% on each side)
@@ -872,21 +875,23 @@ private fun calculateChargeBounds(chargeLocations: List<ChargeLocation>): LatLng
 private fun calculateDriveBounds(driveLocations: List<DriveLocation>): LatLngBounds {
     if (driveLocations.isEmpty()) {
         return LatLngBounds(
-            LatLng(35.0, -10.0),
-            LatLng(55.0, 15.0)
+            toAmapLatLng(35.0, -10.0),
+            toAmapLatLng(55.0, 15.0)
         )
     }
 
-    var minLat = Double.MAX_VALUE
-    var maxLat = Double.MIN_VALUE
-    var minLon = Double.MAX_VALUE
-    var maxLon = Double.MIN_VALUE
+    val convertedPoints = driveLocations.map { toAmapLatLng(it.latitude, it.longitude) }
 
-    driveLocations.forEach { location ->
-        minLat = minOf(minLat, location.latitude)
-        maxLat = maxOf(maxLat, location.latitude)
-        minLon = minOf(minLon, location.longitude)
-        maxLon = maxOf(maxLon, location.longitude)
+    var minLat = Double.MAX_VALUE
+    var maxLat = -Double.MAX_VALUE
+    var minLon = Double.MAX_VALUE
+    var maxLon = -Double.MAX_VALUE
+
+    convertedPoints.forEach { point ->
+        minLat = minOf(minLat, point.latitude)
+        maxLat = maxOf(maxLat, point.latitude)
+        minLon = minOf(minLon, point.longitude)
+        maxLon = maxOf(maxLon, point.longitude)
     }
 
     // Add some padding (about 10% on each side)
@@ -911,7 +916,7 @@ private fun calculateDriveBounds(driveLocations: List<DriveLocation>): LatLngBou
 private fun createCountryHighlightPolygons(boundary: CountryBoundary, accentColor: Int): List<PolygonOptions> {
     return boundary.polygons.mapIndexed { index, ring ->
         PolygonOptions()
-            .addAll(ring.map { (lat, lon) -> LatLng(lat, lon) })
+            .addAll(ring.map { (lat, lon) -> toAmapLatLng(lat, lon) })
             .fillColor(
                 android.graphics.Color.argb(
                     25,

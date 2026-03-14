@@ -17,8 +17,11 @@ import java.util.concurrent.TimeUnit
 import com.matedroid.data.sync.ChargingNotificationWorker
 import com.matedroid.data.sync.DataSyncWorker
 import com.matedroid.data.sync.TpmsPressureWorker
+import com.matedroid.data.local.SettingsDataStore
 import com.matedroid.notification.SentryNotificationManager
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -30,6 +33,9 @@ class MateDroidApp : Application(), Configuration.Provider {
     @Inject
     lateinit var sentryNotificationManager: SentryNotificationManager
 
+    @Inject
+    lateinit var settingsDataStore: SettingsDataStore
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -38,6 +44,11 @@ class MateDroidApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+
+        val mapSettings = runBlocking { settingsDataStore.settings.first() }
+        if (mapSettings.amapAndroidSdkKey.isNotBlank()) {
+            MapsInitializer.setApiKey(mapSettings.amapAndroidSdkKey)
+        }
 
         MapsInitializer.updatePrivacyShow(this, true, true)
         MapsInitializer.updatePrivacyAgree(this, true)

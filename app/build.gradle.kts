@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,16 +5,6 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
-
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use(::load)
-    }
-}
-
-val amapSdkKey = localProperties.getProperty("amap.sdk.key", "")
-val amapWebKey = localProperties.getProperty("amap.web.key", "")
 
 // Room schema export location for migrations
 ksp {
@@ -41,8 +29,7 @@ android {
             commandLine("git", "rev-parse", "--short", "HEAD")
         }.standardOutput.asText.get().trim()
         buildConfigField("String", "GIT_SHA", "\"$gitSha\"")
-        buildConfigField("String", "AMAP_WEB_SERVICE_KEY", "\"$amapWebKey\"")
-        manifestPlaceholders["amapApiKey"] = amapSdkKey
+        manifestPlaceholders["amapApiKey"] = ""
     }
 
     signingConfigs {

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Maps / Geocoding**: Replaced OpenStreetMap map views with AMap across dashboard, drive details, charge details, and regions visited. Reverse geocoding now prefers AMap and formats Chinese addresses as region plus street when available.
+- **Settings**: Added configurable AMap Android SDK Key and Web Service Key fields so map rendering and reverse geocoding keys can be updated from the app.
+
+### Fixed
+- **AMap routes**: Convert TeslaMate WGS84 coordinates to GCJ-02 before drawing overlays so drive routes, markers, and highlighted regions line up with the AMap base map.
 
 ## [1.2.3] - 2026-03-08
 

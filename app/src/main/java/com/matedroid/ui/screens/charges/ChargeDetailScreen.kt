@@ -67,7 +67,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlin.math.roundToInt
 import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MarkerOptions
 import com.matedroid.R
 import com.matedroid.data.api.models.ChargeDetail
@@ -77,6 +76,7 @@ import com.matedroid.domain.model.UnitFormatter
 import com.matedroid.ui.components.AmapMapView
 import com.matedroid.ui.components.FullscreenLineChart
 import com.matedroid.ui.components.createDotMarkerIcon
+import com.matedroid.ui.util.toAmapLatLng
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -592,7 +592,7 @@ private fun ChargeMapCard(latitude: Double, longitude: Double) {
                 AmapMapView(
                     modifier = Modifier.fillMaxSize()
                 ) { mapView, map ->
-                    val point = LatLng(latitude, longitude)
+                    val point = toAmapLatLng(latitude, longitude)
                     map.clear()
                     map.uiSettings.apply {
                         setAllGesturesEnabled(true)

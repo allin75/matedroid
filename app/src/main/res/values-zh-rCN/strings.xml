@@ -68,8 +68,16 @@
     <string name="settings_api_token_label">API Token（可选）</string>
     <string name="settings_api_token_placeholder">你的 API Token</string>
     <string name="settings_api_token_hint">如果你的 TeslamateApi 不需要认证，可留空。</string>
+    <string name="settings_amap_android_key_label">高德 Android SDK Key</string>
+    <string name="settings_amap_android_key_placeholder">你的高德 Android SDK Key</string>
+    <string name="settings_amap_android_key_hint">用于显示应用内地图。除非你要切换项目或 Key，否则保持当前值即可。</string>
+    <string name="settings_amap_web_key_label">高德 Web 服务 Key</string>
+    <string name="settings_amap_web_key_placeholder">你的高德 Web 服务 Key</string>
+    <string name="settings_amap_web_key_hint">用于地址反向地理编码。如果 Key 缺失或无效，将回退到备用地址解析方式。</string>
     <string name="hide_token">隐藏 Token</string>
     <string name="show_token">显示 Token</string>
+    <string name="hide_key">隐藏 Key</string>
+    <string name="show_key">显示 Key</string>
     <string name="settings_accept_invalid_certs">接受无效证书</string>
     <string name="settings_accept_invalid_certs_hint">用于自签名证书</string>
     <string name="settings_accept_invalid_certs_warning">禁用证书校验会使连接容易遭受中间人攻击。请仅在可信网络中使用。</string>

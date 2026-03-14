@@ -183,9 +183,21 @@
     <string name="settings_api_token_placeholder">Tu token API</string>
     <string name="settings_api_token_hint">Deja vacío si tu TeslamateApi no requiere autenticación.</string>
 
+    <!-- AMap Android SDK key field -->
+    <string name="settings_amap_android_key_label">Clave de AMap Android SDK</string>
+    <string name="settings_amap_android_key_placeholder">Tu clave de AMap Android SDK</string>
+    <string name="settings_amap_android_key_hint">Se usa para mostrar el mapa dentro de la app. Deja el valor actual salvo que quieras cambiar de proyecto o clave.</string>
+
+    <!-- AMap Web Service key field -->
+    <string name="settings_amap_web_key_label">Clave de AMap Web Service</string>
+    <string name="settings_amap_web_key_placeholder">Tu clave de AMap Web Service</string>
+    <string name="settings_amap_web_key_hint">Se usa para la geocodificación inversa de direcciones. Si falta o no es válida, la dirección usará el método de respaldo.</string>
+
     <!-- Content description for password visibility toggle -->
     <string name="hide_token">Ocultar token</string>
     <string name="show_token">Mostrar token</string>
+    <string name="hide_key">Ocultar clave</string>
+    <string name="show_key">Mostrar clave</string>
 
     <!-- Accept invalid certificates toggle -->
     <string name="settings_accept_invalid_certs">Aceptar certificados inválidos</string>

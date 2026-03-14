@@ -82,6 +82,7 @@ import com.matedroid.domain.model.UnitFormatter
 import com.matedroid.ui.components.AmapMapView
 import com.matedroid.ui.components.FullscreenLineChart
 import com.matedroid.ui.theme.CarColorPalettes
+import com.matedroid.ui.util.toAmapLatLng
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -462,6 +463,13 @@ private fun DriveMapCard(positions: List<DrivePosition>, routeColor: Color) {
     val context = LocalContext.current
     val routeColorArgb = routeColor.toArgb()
     val validPositions = positions.filter { it.latitude != null && it.longitude != null }
+    val points = remember(validPositions) {
+        validPositions.mapNotNull { pos ->
+            val latitude = pos.latitude ?: return@mapNotNull null
+            val longitude = pos.longitude ?: return@mapNotNull null
+            toAmapLatLng(latitude, longitude)
+        }
+    }
 
     if (validPositions.isEmpty()) return
 
@@ -503,12 +511,6 @@ private fun DriveMapCard(positions: List<DrivePosition>, routeColor: Color) {
                 AmapMapView(
                     modifier = Modifier.fillMaxSize()
                 ) { mapView, map ->
-                    val points = validPositions.mapNotNull { pos ->
-                        val latitude = pos.latitude ?: return@mapNotNull null
-                        val longitude = pos.longitude ?: return@mapNotNull null
-                        LatLng(latitude, longitude)
-                    }
-
                     map.clear()
                     map.uiSettings.apply {
                         setAllGesturesEnabled(true)

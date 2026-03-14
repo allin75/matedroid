@@ -2,6 +2,7 @@ package com.matedroid.ui.screens.settings
 
 import android.content.Context
 import androidx.work.WorkManager
+import com.amap.api.maps.MapsInitializer
 import com.matedroid.data.api.models.GlobalSettings
 import com.matedroid.data.api.models.GlobalSettingsData
 import com.matedroid.data.api.models.TeslamateUrls
@@ -19,6 +20,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -66,6 +68,9 @@ class SettingsViewModelTest {
         // Mock WorkManager.getInstance()
         mockkStatic(WorkManager::class)
         every { WorkManager.getInstance(any()) } returns workManager
+
+        mockkStatic(MapsInitializer::class)
+        every { MapsInitializer.setApiKey(any()) } returns Unit
     }
 
     @After
@@ -84,6 +89,8 @@ class SettingsViewModelTest {
             serverUrl = "https://test.com",
             secondaryServerUrl = "https://backup.test.com",
             apiToken = "token123",
+            amapAndroidSdkKey = "android-key",
+            amapWebServiceKey = "web-key",
             acceptInvalidCerts = true
         )
         every { settingsDataStore.settings } returns flowOf(savedSettings)
@@ -94,6 +101,8 @@ class SettingsViewModelTest {
         assertEquals("https://test.com", viewModel.uiState.value.serverUrl)
         assertEquals("https://backup.test.com", viewModel.uiState.value.secondaryServerUrl)
         assertEquals("token123", viewModel.uiState.value.apiToken)
+        assertEquals("android-key", viewModel.uiState.value.amapAndroidSdkKey)
+        assertEquals("web-key", viewModel.uiState.value.amapWebServiceKey)
         assertTrue(viewModel.uiState.value.acceptInvalidCerts)
         assertFalse(viewModel.uiState.value.isLoading)
     }
@@ -243,7 +252,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `saveSettings calls datastore with all fields and triggers callback`() = runTest {
-        coEvery { settingsDataStore.saveSettings(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { settingsDataStore.saveSettings(any(), any(), any(), any(), any(), any(), any()) } returns Unit
 
         viewModel = createViewModel()
         testDispatcher.scheduler.advanceUntilIdle()
@@ -251,6 +260,8 @@ class SettingsViewModelTest {
         viewModel.updateServerUrl("https://saved.com")
         viewModel.updateSecondaryServerUrl("https://backup.com")
         viewModel.updateApiToken("saved-token")
+        viewModel.updateAmapAndroidSdkKey("android-key")
+        viewModel.updateAmapWebServiceKey("web-key")
         viewModel.updateAcceptInvalidCerts(true)
 
         var callbackCalled = false
@@ -262,10 +273,13 @@ class SettingsViewModelTest {
                 "https://saved.com",
                 "https://backup.com",
                 "saved-token",
+                "android-key",
+                "web-key",
                 true,
                 "EUR"
             )
         }
+        verify { MapsInitializer.setApiKey("android-key") }
         assertTrue(callbackCalled)
     }
 

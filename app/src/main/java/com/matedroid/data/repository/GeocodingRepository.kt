@@ -1,11 +1,11 @@
 package com.matedroid.data.repository
 
 import android.util.Log
-import com.matedroid.BuildConfig
 import com.matedroid.data.api.AmapAddressComponent
 import com.matedroid.data.api.AmapWebServiceApi
 import com.matedroid.data.api.NominatimApi
 import com.matedroid.data.api.NominatimAddress
+import com.matedroid.data.local.SettingsDataStore
 import com.matedroid.data.local.dao.GeocodeCacheDao
 import com.matedroid.data.local.dao.GeocodeProgressDao
 import com.matedroid.data.local.dao.GeocodeQueueDao
@@ -14,6 +14,7 @@ import com.matedroid.data.local.entity.GeocodeProgress
 import com.matedroid.data.local.entity.GeocodeQueueItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,6 +52,7 @@ data class CountryBoundary(
 class GeocodingRepository @Inject constructor(
     private val amapWebServiceApi: AmapWebServiceApi,
     private val nominatimApi: NominatimApi,
+    private val settingsDataStore: SettingsDataStore,
     private val geocodeCacheDao: GeocodeCacheDao,
     private val geocodeQueueDao: GeocodeQueueDao,
     private val geocodeProgressDao: GeocodeProgressDao
@@ -269,7 +271,7 @@ class GeocodingRepository @Inject constructor(
     }
 
     private suspend fun reverseGeocodeWithAmap(latitude: Double, longitude: Double): String? {
-        val webKey = BuildConfig.AMAP_WEB_SERVICE_KEY
+        val webKey = settingsDataStore.settings.first().amapWebServiceKey.trim()
         if (webKey.isBlank()) {
             return null
         }

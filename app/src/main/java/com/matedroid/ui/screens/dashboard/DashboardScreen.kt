@@ -113,7 +113,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.BitmapDescriptorFactory
-import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MarkerOptions
 import com.matedroid.R
 import com.matedroid.data.local.CarImageOverride
@@ -138,6 +137,7 @@ import com.matedroid.ui.components.calculateDcGaugeProgress
 import com.matedroid.ui.theme.CarColorPalette
 import com.matedroid.ui.theme.CarColorPalettes
 import com.matedroid.ui.theme.MateDroidTheme
+import com.matedroid.ui.util.toAmapLatLng
 import com.matedroid.ui.theme.StatusError
 import com.matedroid.ui.theme.StatusSuccess
 import com.matedroid.ui.theme.StatusWarning
@@ -1654,7 +1654,7 @@ private fun SmallLocationMap(
         AmapMapView(
             modifier = Modifier.fillMaxSize()
         ) { _, map ->
-            val carLocation = LatLng(latitude, longitude)
+            val carLocation = toAmapLatLng(latitude, longitude)
             map.clear()
             map.uiSettings.apply {
                 setAllGesturesEnabled(false)
